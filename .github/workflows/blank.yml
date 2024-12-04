@@ -16,22 +16,8 @@ jobs:
           # Update whenever charmcraft.yaml is changed
           - series: jammy
             bases-index: 0
-          - series: focal
-            bases-index: 1
         tox-environments:
           - integration-db
-          - integration-upgrade-1
-          - integration-upgrade-2
-          - integration-upgrade-3
-          - integration-upgrade-4
-          # To be enabled after data_interfaces v040
-          # - integration-upgrade-5
-          # - integration-upgrade-6
-          # - integration-upgrade-7
-          - integration-upgrade-databag
-          - integration-s3
-          - integration-opensearch
-          - integration-kafka
         juju-version:
           - juju-bootstrap-option: "2.9.44"
             juju-snap-channel: "2.9/stable"
@@ -76,10 +62,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
+      - name: Set websockets env variable
+        if: ${{ matrix.juju-version.libjuju-version < '3.5.2.1' }}
+        run: echo "WEBSOCKETS_VERSION_SPECIFIER=<14" >> "$GITHUB_ENV"
       - name: Echo
         env:
           CI_PACKED_CHARMS: ${{ needs.build.outputs.charms }}
           LIBJUJU_VERSION_SPECIFIER: "==${{ matrix.juju-version.libjuju-version }}"
         id: select-tests
         run: |
-          echo $LIBJUJU_VERSION_SPECIFIER
+          echo WEBSOCKETS_VERSION_SPECIFIER=$WEBSOCKETS_VERSION_SPECIFIER
+          echo LIBJUJU_VERSION_SPECIFIER=$LIBJUJU_VERSION_SPECIFIER
